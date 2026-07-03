@@ -5,7 +5,9 @@ import os
 
 # JSON data structure to hold cached package information. Structure: {"packages": [{"common_name": "App Name", "package_name": "com.example.app"}, ...]}
 config_data = {}
-config_json_path = "~/.config/tapps-launcher/config.json"
+config_json_path = "~/.config/tapps-launcher/"
+json_data_file = "data.json"
+json_file_path = os.path.join(config_json_path, json_data_file)
 
 list_packages_command_prefix = "cmd package list packages"
 launch_app_command_prefix = "am start -p"
@@ -62,15 +64,22 @@ def find_app(app_name):
 
     return matching_apps
 
+def _make_config_dir():
+    # Create config directory if it doesn't exist
+    if not os.path.exists(os.path.expanduser(config_json_path)):
+        os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
+    
+    # Create empty JSON file if it doesn't exist
+    if not os.path.exists(os.path.expanduser(json_file_path)):
+        with open(os.path.expanduser(json_file_path), 'w') as f:
+            json.dump({"packages": []}, f, indent=4)
+
 def load_cached_json():
     # Load cached JSON data from config file
 
     # If file not found, create directory and empty file, then rebuild cached data
     if not os.path.exists(os.path.expanduser(config_json_path)):
-        os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
-        with open(os.path.expanduser(config_json_path), 'w') as f:
-            json.dump({"packages": []}, f, indent=4)
-
+        _make_config_dir()
         rebuild_cached_data()
 
     global config_data
@@ -106,23 +115,19 @@ def rebuild_cached_data():
             # Create a list of dictionaries with common_name and package_name
             package_list = [{"common_name": common_name, "package_name": package} for common_name, package in zip(common_names, packages)]
             
-            #os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
-            with open(config_json_path, 'w') as f:
-                # Read each entry and only update new packages to the config_data
-                if os.path.exists(os.path.expanduser(config_json_path)):
-                    with open(config_json_path, 'r') as existing_file:
-                        try:
-                            existing_data = json.load(existing_file)
-                        except json.JSONDecodeError:
-                            existing_data = {"packages": []}
-                else:
-                    existing_data = {"packages": []}
+            with open(json_file_path, 'w') as data_file:
+                # Load existing data 
+                existing_data = {}
+                try:
+                    existing_data = json.load(data_file)
+                except json.JSONDecodeError:
+                    print(f"Error decoding JSON from {json_file_path}. Overwriting with new data.")
                 
                 # Merge existing packages with new packages, avoiding duplicates
                 existing_packages = set(existing_data.get("packages", []))
                 new_packages = set(package_list)
                 merged_packages = list(existing_packages.union(new_packages))
-                json.dump(merged_packages, f, indent=4)
+                json.dump(merged_packages, data_file, indent=4)
 
             print(f"Cached data rebuilt and saved to {config_json_path}.")
         else:
