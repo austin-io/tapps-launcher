@@ -3,6 +3,10 @@ import subprocess
 import json
 import os
 
+debug = False  # Set to True to enable debug output
+debug_data = """package:com.example.app
+package:com.other.app"""
+
 # JSON data structure to hold cached package information. Structure: {"packages": [{"common_name": "App Name", "package_name": "com.example.app"}, ...]}
 config_data = {}
 config_json_path = os.path.expanduser("~/.config/tapps-launcher/")
@@ -43,6 +47,9 @@ def run_app(package_name):
             sys.exit(1)
         
         command = f"{launch_app_command_prefix} {matching_apps[0]['package_name']}"
+        if debug:
+            print(f"Debug: Running command: {command}")
+            return
 
         result = subprocess.run(command.split(), capture_output=True, text=True)
         if result.returncode == 0:
@@ -93,9 +100,16 @@ def rebuild_cached_data():
     # Rebuild cached data by listing packages and saving to JSON file
     
     try:
-        result = subprocess.run(list_packages_command_prefix.split(), capture_output=True, text=True)
-        if result.returncode == 0:
-            packages = result.stdout.strip().splitlines()
+        result = None
+        if not debug:
+            result = subprocess.run(list_packages_command_prefix.split(), capture_output=True, text=True)
+
+        if debug or result.returncode == 0:
+            if debug:
+                print("Debug: Using debug data for package list.")
+                packages = debug_data.strip().splitlines()
+            else:
+                packages = result.stdout.strip().splitlines()
 
             # Parse out "package:" prefix from each line
             packages = [pkg.replace("package:", "") for pkg in packages]
@@ -112,23 +126,22 @@ def rebuild_cached_data():
                 common_names.append(common_name)
             
             # Create a list of dictionaries with common_name and package_name
-            package_list = [{"common_name": common_name, "package_name": package} for common_name, package in zip(common_names, packages)]
+            new_data = [{"common_name": common_name, "package_name": package} for common_name, package in zip(common_names, packages)]
             
-            with open(json_file_path, 'w') as data_file:
-                # Load existing data 
-                existing_data = {}
+            existing_json = {}
+            with open(json_file_path, 'r') as json_file:
                 try:
-                    existing_data = json.load(data_file)
+                    existing_json = json.load(json_file)
                 except json.JSONDecodeError:
                     print(f"Error decoding JSON from {json_file_path}. Overwriting with new data.")
-                
-                # Merge existing packages with new packages, avoiding duplicates
-                existing_packages = set(existing_data.get("packages", []))
-                new_packages = set(package_list)
-                merged_packages = list(existing_packages.union(new_packages))
-                json.dump(merged_packages, data_file, indent=4)
 
-            print(f"Cached data rebuilt and saved to {config_json_path}.")
+            with open(json_file_path, 'w') as json_file:
+                # Merge existing packages with new packages, avoiding duplicates
+                old_data = [{"common_name": pkg["common_name"], "package_name": pkg["package_name"]} for pkg in existing_json.get("packages", [])]
+                final_json_data = {"packages": old_data + [pkg for pkg in new_data if pkg not in old_data]}
+                json.dump(final_json_data, json_file, indent=4)
+
+            print(f"Cached data rebuilt and saved to {json_file_path}.")
         else:
             print("Error rebuilding cached data:", result.stderr)
     except Exception as e:
