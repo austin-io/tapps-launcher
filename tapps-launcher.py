@@ -65,8 +65,12 @@ def find_app(app_name):
 def load_cached_json():
     # Load cached JSON data from config file
 
-    # If file not found rebuild cached data
+    # If file not found, create directory and empty file, then rebuild cached data
     if not os.path.exists(os.path.expanduser(config_json_path)):
+        os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
+        with open(os.path.expanduser(config_json_path), 'w') as f:
+            json.dump({"packages": []}, f, indent=4)
+
         rebuild_cached_data()
 
     global config_data
@@ -102,7 +106,7 @@ def rebuild_cached_data():
             # Create a list of dictionaries with common_name and package_name
             package_list = [{"common_name": common_name, "package_name": package} for common_name, package in zip(common_names, packages)]
             
-            os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
+            #os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
             with open(config_json_path, 'w') as f:
                 # Read each entry and only update new packages to the config_data
                 if os.path.exists(os.path.expanduser(config_json_path)):
