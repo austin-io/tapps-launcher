@@ -20,7 +20,7 @@ Options:
     -l --list          List available Android apps
     -r --run <app>     Launch the specified Android app
     -s --search <app>  Search for Android apps
-    -r --rebuild       Rebuild cached apps data. Run this if app list is out of date."""
+    -b --rebuild       Rebuild cached apps data. Run this if app list is out of date."""
 
     print(help_text)
 
@@ -167,6 +167,11 @@ def main():
         else:
             print(f"No matching apps found for '{search_term}'.")
 
+        sys.exit(0)
+    
+    if "--rebuild" in args or "-b" in args:
+        # Rebuild cached apps data
+        rebuild_cached_data()
         sys.exit(0)
 
 def _get_arg_input(args, arg_list):
