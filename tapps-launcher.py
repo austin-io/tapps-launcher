@@ -5,9 +5,9 @@ import os
 
 # JSON data structure to hold cached package information. Structure: {"packages": [{"common_name": "App Name", "package_name": "com.example.app"}, ...]}
 config_data = {}
-config_json_path = "~/.config/tapps-launcher/"
+config_json_path = os.path.expanduser("~/.config/tapps-launcher/")
 json_data_file_name = "data.json"
-json_file_path = os.path.join(config_json_path, json_data_file_name)
+json_file_path = os.path.expanduser(os.path.join(config_json_path, json_data_file_name))
 
 list_packages_command_prefix = "cmd package list packages"
 launch_app_command_prefix = "am start -p"
@@ -27,16 +27,13 @@ Options:
     print(help_text)
 
 def show_app_list():
-    try:
-        result = subprocess.run(list_packages_command_prefix.split(), capture_output=True, text=True)
-        if result.returncode == 0:
-            packages = result.stdout.strip().splitlines()
-            for package in packages:
-                print(package)
-        else:
-            print("Error listing packages:", result.stderr)
-    except Exception as e:
-        print("An error occurred while listing packages:", str(e))
+    # List available Android apps from cached JSON data
+    if not config_data.get("packages"):
+        _make_config_dir()
+        rebuild_cached_data()
+    
+    for package in config_data.get("packages", []):
+        print(package.get("common_name", "Unknown App"), "-", package.get("package_name", "Unknown Package"))
 
 def run_app(package_name):
     try:
@@ -59,26 +56,27 @@ def find_app(app_name):
     # Search app in cached JSON file
     matching_apps = []
     for package in config_data.get("packages", []):
-        if app_name.lower() in package.lower():
+        common_name = package.get("common_name", "").lower()
+        package_name = package.get("package_name", "").lower()
+        if app_name.lower() in common_name or app_name.lower() in package_name:
             matching_apps.append(package)
 
     return matching_apps
 
 def _make_config_dir():
     # Create config directory if it doesn't exist
-    if not os.path.exists(os.path.expanduser(config_json_path)):
-        os.makedirs(os.path.dirname(os.path.expanduser(config_json_path)), exist_ok=True)
+    os.makedirs(os.path.dirname(config_json_path), exist_ok=True)
     
     # Create empty JSON file if it doesn't exist
-    if not os.path.exists(os.path.expanduser(json_file_path)):
-        with open(os.path.expanduser(json_file_path), 'w') as f:
+    if not os.path.exists(json_file_path):
+        with open(json_file_path, 'w') as f:
             json.dump({"packages": []}, f, indent=4)
 
 def load_cached_json():
     # Load cached JSON data from config file
 
     # If file not found, create directory and empty file, then rebuild cached data
-    if not os.path.exists(os.path.expanduser(json_file_path)):
+    if not os.path.exists(json_file_path):
         _make_config_dir()
         rebuild_cached_data()
 
@@ -93,6 +91,7 @@ def load_cached_json():
 
 def rebuild_cached_data():
     # Rebuild cached data by listing packages and saving to JSON file
+    
     try:
         result = subprocess.run(list_packages_command_prefix.split(), capture_output=True, text=True)
         if result.returncode == 0:
