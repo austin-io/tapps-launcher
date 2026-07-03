@@ -93,8 +93,10 @@ def load_cached_json():
             config_data = json.load(f)
     except FileNotFoundError:
         print(f"Config file not found at {json_file_path}. Please run the rebuild command.")
+        pass
     except json.JSONDecodeError:
         print(f"Error decoding JSON from {json_file_path}. Please check the file format.")
+        pass
 
 def rebuild_cached_data():
     # Rebuild cached data by listing packages and saving to JSON file
