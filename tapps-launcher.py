@@ -6,8 +6,8 @@ import os
 # JSON data structure to hold cached package information. Structure: {"packages": [{"common_name": "App Name", "package_name": "com.example.app"}, ...]}
 config_data = {}
 config_json_path = "~/.config/tapps-launcher/"
-json_data_file = "data.json"
-json_file_path = os.path.join(config_json_path, json_data_file)
+json_data_file_name = "data.json"
+json_file_path = os.path.join(config_json_path, json_data_file_name)
 
 list_packages_command_prefix = "cmd package list packages"
 launch_app_command_prefix = "am start -p"
@@ -78,18 +78,18 @@ def load_cached_json():
     # Load cached JSON data from config file
 
     # If file not found, create directory and empty file, then rebuild cached data
-    if not os.path.exists(os.path.expanduser(config_json_path)):
+    if not os.path.exists(os.path.expanduser(json_file_path)):
         _make_config_dir()
         rebuild_cached_data()
 
     global config_data
     try:
-        with open(config_json_path, 'r') as f:
+        with open(json_file_path, 'r') as f:
             config_data = json.load(f)
     except FileNotFoundError:
-        print(f"Config file not found at {config_json_path}. Please run the rebuild command.")
+        print(f"Config file not found at {json_file_path}. Please run the rebuild command.")
     except json.JSONDecodeError:
-        print(f"Error decoding JSON from {config_json_path}. Please check the file format.")
+        print(f"Error decoding JSON from {json_file_path}. Please check the file format.")
 
 def rebuild_cached_data():
     # Rebuild cached data by listing packages and saving to JSON file
