@@ -31,9 +31,9 @@ class MainWindow(Gtk.Window):
         list_box = Gtk.ListBox()
 
         # Search bar to filter apps
-        self.search_entry = Gtk.Entry()
+        self.search_entry = Gtk.SearchEntry()
         self.search_entry.set_placeholder_text("Search for an app...")
-        self.search_entry.connect("changed", self.on_search_changed, list_box)
+        self.search_entry.connect("search-changed", self.on_search_changed, list_box)
         vbox.pack_start(self.search_entry, False, False, 0)
         
         # scrolling vertical box to hold widgets
