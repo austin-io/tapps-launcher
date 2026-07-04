@@ -3,9 +3,12 @@ import subprocess
 import json
 import os
 
-debug = False  # Set to True to enable debug output
+debug = True  # Set to True to enable debug output
 debug_data = """package:com.example.app
-package:com.other.app"""
+package:com.other.app
+package:com.foo.app
+package:com.bar.app
+package:com.baz.app"""
 
 # JSON data structure to hold cached package information. Structure: {"packages": [{"common_name": "App Name", "package_name": "com.example.app"}, ...]}
 config_data = {}
