@@ -3,7 +3,7 @@ import subprocess
 import json
 import os
 
-debug = True  # Set to True to enable debug output
+debug = False  # Set to True to enable debug output
 debug_data = """package:com.example.app
 package:com.other.app
 package:com.foo.app
