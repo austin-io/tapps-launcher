@@ -16,18 +16,18 @@ Launch and Search for Android apps from withing Termux and Termux-X11
 Show help options
 
 ```
-tapps-launcher
-tapps-launcher -h
-tapps-launcher --help
+tapps_launcher
+tapps_launcher -h
+tapps_launcher --help
 ```
 
 ### Run
 
-Run an app using `-r/--run`. You don't need the full package name, `tapps-launcher` will search for the app name.
+Run an app using `-r/--run`. You don't need the full package name, `tapps_launcher` will search for the app name.
 
 ```
-tapps-launcher -r firefox
-tapps-launcher --run mozilla
+tapps_launcher -r firefox
+tapps_launcher --run mozilla
 ```
 
 ### Search
@@ -35,8 +35,8 @@ tapps-launcher --run mozilla
 Search for installed apps with `-s/--search` using a keyword.
 
 ```
-tapps-launcher -s firefox
-tapps-launcher --search mozilla
+tapps_launcher -s firefox
+tapps_launcher --search mozilla
 ```
 
 ### List
@@ -44,8 +44,8 @@ tapps-launcher --search mozilla
 List all the available apps using `-l/--list`.
 
 ```
-tapps-launcher -l
-tapps-launcher --list
+tapps_launcher -l
+tapps_launcher --list
 ```
 
 ## GUI Usage
@@ -54,5 +54,5 @@ tapps-launcher --list
 >
 > IMPORTANT NOTE: YOU MUST CHANGE TERMUX SETTINGS TO ALWAYS SHOW ON TOP OR ELSE ANDROID APPS WONT LAUNCH
 
-Launch the GTK app in an X11 environment using `tapps-gui`.
+Launch the GTK app in an X11 environment using `tapps_gui`.
 
