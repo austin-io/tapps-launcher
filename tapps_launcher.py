@@ -18,7 +18,13 @@ json_file_path = os.path.expanduser(os.path.join(config_json_path, json_data_fil
 
 list_packages_command_prefix = "cmd package list packages"
 launch_app_command_prefix = "am start"
-main_activity_suffix = "/.MainActivity"
+activity_suffix_list = [
+    "", # Try without any activity suffix first
+    "/.MainActivity",
+    "/.StartActivity",
+    "/.HomeActivity",
+    "/.LauncherActivity",
+]
 
 def print_help():
     help_text = """
@@ -50,24 +56,19 @@ def run_app(package_name):
             print(f"No matching apps found for '{package_name}'.")
             sys.exit(1)
         
-        command = f"{launch_app_command_prefix} {matching_apps[0]['package_name']}"
-        if debug:
-            print(f"Debug: Running command: {command}")
-            return
+        for activity_suffix in activity_suffix_list:
+            command = f"{launch_app_command_prefix} {matching_apps[0]['package_name']}{activity_suffix}"
+            if debug:
+                print(f"Debug: Running command: {command}")
+                return
 
-        result = subprocess.run(command.split(), capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"Successfully launched {package_name}")
-        else:
-            print(f"Error launching {package_name}: {result.stderr}")
-            print("Trying again using Main Activity")
-            command = command + main_activity_suffix
             result = subprocess.run(command.split(), capture_output=True, text=True)
             if result.returncode == 0:
-                print(f"Successfully launched {package_name} using Main Activity")
+                print(f"Successfully launched {package_name}")
+                break;
             else:
-                print(f"Error launching {package_name} using Main Activity: {result.stderr}")
-                
+                print(f"Error launching {package_name}: {result.stderr}")
+
     except Exception as e:
         print(f"An error occurred while launching {package_name}: {str(e)}")
 
