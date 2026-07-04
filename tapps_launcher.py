@@ -17,7 +17,8 @@ json_data_file_name = "data.json"
 json_file_path = os.path.expanduser(os.path.join(config_json_path, json_data_file_name))
 
 list_packages_command_prefix = "cmd package list packages"
-launch_app_command_prefix = "am start -p"
+launch_app_command_prefix = "am start"
+main_activity_suffix = "/.MainActivity"
 
 def print_help():
     help_text = """
@@ -59,6 +60,14 @@ def run_app(package_name):
             print(f"Successfully launched {package_name}")
         else:
             print(f"Error launching {package_name}: {result.stderr}")
+            print("Trying again using Main Activity")
+            command = command + main_activity_suffix
+            result = subprocess.run(command.split(), capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"Successfully launched {package_name} using Main Activity")
+            else:
+                print(f"Error launching {package_name} using Main Activity: {result.stderr}")
+                
     except Exception as e:
         print(f"An error occurred while launching {package_name}: {str(e)}")
 
